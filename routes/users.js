@@ -1,6 +1,5 @@
 const express = require('express');
-const User = require('../models/User');
-const Analysis = require('../models/Analysis');
+const SupabaseHelper = require('../utils/supabaseHelper');
 const auth = require('../middleware/auth');
 const router = express.Router();
 
@@ -8,9 +7,7 @@ const router = express.Router();
 // @desc    Get user profile with stats
 router.get('/profile', auth, async (req, res) => {
   try {
-    const user = await User.findById(req.userId)
-      .populate('analyses')
-      .select('-password');
+    const user = await SupabaseHelper.getUserById(req.userId);
 
     if (!user) {
       return res.status(404).json({

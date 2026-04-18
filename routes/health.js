@@ -1,5 +1,5 @@
 const express = require('express');
-const mongoose = require('mongoose');
+const SupabaseHelper = require('../utils/supabaseHelper');
 const router = express.Router();
 
 // @route   GET /api/health
@@ -22,7 +22,8 @@ router.get('/', async (req, res) => {
     };
 
     // Check database connection
-    if (mongoose.connection.readyState === 1) {
+    const dbConnected = await SupabaseHelper.testConnection();
+    if (dbConnected) {
       healthCheck.database = 'connected';
       healthCheck.services.database = 'healthy';
     } else {

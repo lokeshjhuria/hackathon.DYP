@@ -7,6 +7,14 @@ const path = require('path');
 require('dotenv').config();
 
 const connectDB = require('./config/database');
+
+// Global Supabase client
+let supabase = null;
+
+// Initialize database connection
+const initializeDatabase = async () => {
+  supabase = await connectDB();
+};
 const authRoutes = require('./routes/auth');
 const analysisRoutes = require('./routes/analysis');
 const githubRoutes = require('./routes/github');
@@ -17,8 +25,8 @@ const healthRoutes = require('./routes/health');
 const app = express();
 const PORT = process.env.PORT || 5000;
 
-// Connect to database
-connectDB();
+// Initialize database connection
+initializeDatabase();
 
 // Security middleware
 app.use(helmet({

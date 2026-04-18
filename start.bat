@@ -1,4 +1,4 @@
-@echo on
+@echo off
 echo Starting DCIS Backend Server...
 echo.
 
@@ -11,34 +11,38 @@ if %errorlevel% neq 0 (
     exit /b 1
 )
 
-REM Check if MongoDB is running
-echo Checking MongoDB connection...
-timeout /t 3 >nul
-docker ps --filter "name=mongodb" 2>nul | findstr mongodb >nul
-if %errorlevel% equ 0 (
-    echo MongoDB is running (Docker)
-) else (
-    net start MongoDB 2>nul | findstr "started" >nul
-    if %errorlevel% equ 0 (
-        echo MongoDB is running (Windows Service)
-    ) else (
-        echo Warning: MongoDB may not be running
-        echo Please start MongoDB or install Docker
-        echo.
-        echo Options:
-        echo 1. Docker: docker run -d -p 27017:27017 --name mongodb mongo:7.0
-        echo 2. Windows Service: net start MongoDB
-        echo 3. Manual: Install from https://www.mongodb.com/try/download/community
-        echo.
-        echo Continue anyway? (y/n)
-        set /p continue=
-        if /i not "%continue%"=="y" (
-            echo Setup cancelled.
-            pause
-            exit /b 1
-        )
-    )
+REM Check if Supabase configuration exists
+echo Checking Supabase configuration...
+if not exist ".env" (
+    echo Warning: .env file not found
+    echo Creating .env from template...
+    copy ".env.example" ".env"
+    echo Please edit .env file with your Supabase credentials
+    pause
 )
+
+REM Check if Supabase credentials are configured
+findstr /C:"SUPABASE_URL" ".env" >nul
+if %errorlevel% neq 0 (
+    echo Warning: SUPABASE_URL not found in .env file
+    echo Please add your Supabase URL to .env file
+    echo.
+    echo Example: SUPABASE_URL=https://your-project-id.supabase.co
+    pause
+    exit /b 1
+)
+
+findstr /C:"SUPABASE_ANON_KEY" ".env" >nul
+if %errorlevel% neq 0 (
+    echo Warning: SUPABASE_ANON_KEY not found in .env file
+    echo Please add your Supabase anon key to .env file
+    echo.
+    echo Example: SUPABASE_ANON_KEY=your-supabase-anon-key
+    pause
+    exit /b 1
+)
+
+echo Supabase configuration found!
 
 REM Install dependencies if node_modules doesn't exist
 if not exist "node_modules" (
