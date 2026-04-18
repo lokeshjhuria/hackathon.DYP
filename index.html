@@ -1,0 +1,566 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>OPEN TRACK PS - Developer Career Intelligence System</title>
+    <link rel="stylesheet" href="style.css">
+    <link href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.0.0/css/all.min.css" rel="stylesheet">
+</head>
+<body>
+    <div class="container">
+        <nav class="navbar">
+            <div class="nav-brand">
+                <i class="fas fa-chart-line"></i>
+                <span>OPEN TRACK PS</span>
+            </div>
+            <div class="nav-links">
+                <a href="#home">Home</a>
+                <a href="#features">Features</a>
+                <a href="#how-it-works">How It Works</a>
+                <button class="theme-toggle" onclick="toggleTheme()" aria-label="Toggle theme">
+                    <i class="fas fa-moon" id="theme-icon"></i>
+                </button>
+                <a href="#get-started" class="cta-button">Get Started</a>
+            </div>
+        </nav>
+
+        <section id="home" class="hero">
+            <div class="hero-content">
+                <h1 class="hero-title">
+                    <span class="gradient-text">Developer Career Intelligence System:</span>
+                    <br>
+                    <span class="subtitle">Developer Career Intelligence System</span>
+                </h1>
+                <p class="hero-description">
+                    Stop guessing your skill level. Get a 360-degree audit of your demonstrated abilities 
+                    and receive personalized career guidance based on your actual code.
+                </p>
+                <div class="hero-buttons">
+                    <button class="primary-button" onclick="scrollToSection('get-started')">
+                        <i class="fas fa-rocket"></i>
+                        Start Analysis
+                    </button>
+                    <button class="secondary-button" onclick="scrollToSection('how-it-works')">
+                        <i class="fas fa-play-circle"></i>
+                        Watch Demo
+                    </button>
+                </div>
+            </div>
+            <div class="hero-visual">
+                <div class="floating-card code-card">
+                    <i class="fas fa-code"></i>
+                    <span>Code Analysis</span>
+                </div>
+                <div class="floating-card skill-card">
+                    <i class="fas fa-chart-bar"></i>
+                    <span>Skill Assessment</span>
+                </div>
+                <div class="floating-card career-card">
+                    <i class="fas fa-briefcase"></i>
+                    <span>Career Matching</span>
+                </div>
+            </div>
+        </section>
+
+        <section id="problem" class="problem-section">
+            <div class="section-header">
+                <h2 class="section-title">The Problem</h2>
+                <p class="section-subtitle">Why traditional hiring is broken</p>
+            </div>
+            <div class="problem-cards">
+                <div class="problem-card">
+                    <div class="card-icon">
+                        <i class="fas fa-user-ninja"></i>
+                    </div>
+                    <h3>Developers Misjudge Skills</h3>
+                    <p>Most developers have an inaccurate perception of their actual skill level and abilities.</p>
+                </div>
+                <div class="problem-card">
+                    <div class="card-icon">
+                        <i class="fas fa-file-alt"></i>
+                    </div>
+                    <h3>Misleading Resumes</h3>
+                    <p>Resumes often exaggerate experience and don't reflect real-world coding capabilities.</p>
+                </div>
+                <div class="problem-card">
+                    <div class="card-icon">
+                        <i class="fas fa-search"></i>
+                    </div>
+                    <h3>Inefficient Hiring</h3>
+                    <p>Companies struggle to accurately assess candidate skills through traditional interviews.</p>
+                </div>
+            </div>
+        </section>
+
+        <section id="solution" class="solution-section">
+            <div class="section-header">
+                <h2 class="section-title">Our Solution</h2>
+                <p class="section-subtitle">Data-driven career intelligence</p>
+            </div>
+            <div class="solution-content">
+                <div class="solution-text">
+                    <h3>360° Code Analysis Platform</h3>
+                    <p>We ingest your GitHub profiles, project links, and live applications to perform comprehensive audits of your demonstrated skills.</p>
+                    <ul class="feature-list">
+                        <li><i class="fas fa-check-circle"></i> Code Quality Analysis</li>
+                        <li><i class="fas fa-check-circle"></i> UI/UX Assessment</li>
+                        <li><i class="fas fa-check-circle"></i> Security Pattern Detection</li>
+                        <li><i class="fas fa-check-circle"></i> Architecture Evaluation</li>
+                    </ul>
+                </div>
+                <div class="solution-visual">
+                    <div class="analysis-wheel">
+                        <div class="wheel-segment" data-skill="code-quality">
+                            <i class="fas fa-code"></i>
+                            <span>Code Quality</span>
+                        </div>
+                        <div class="wheel-segment" data-skill="ui-ux">
+                            <i class="fas fa-palette"></i>
+                            <span>UI/UX</span>
+                        </div>
+                        <div class="wheel-segment" data-skill="security">
+                            <i class="fas fa-shield-alt"></i>
+                            <span>Security</span>
+                        </div>
+                        <div class="wheel-segment" data-skill="architecture">
+                            <i class="fas fa-sitemap"></i>
+                            <span>Architecture</span>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </section>
+
+        <section id="features" class="features-section">
+            <div class="section-header">
+                <h2 class="section-title">Advanced Features</h2>
+                <p class="section-subtitle">Comprehensive developer intelligence platform</p>
+            </div>
+            <div class="features-grid">
+                <div class="feature-card">
+                    <div class="feature-icon">
+                        <i class="fab fa-github"></i>
+                    </div>
+                    <h3>GitHub Profile Ingestion</h3>
+                    <p>Deep analysis of your entire GitHub profile including repositories, contributions, commit history, and collaboration patterns.</p>
+                </div>
+                <div class="feature-card">
+                    <div class="feature-icon">
+                        <i class="fas fa-code-branch"></i>
+                    </div>
+                    <h3>Code Quality Analyzer</h3>
+                    <p>Advanced static code analysis evaluating maintainability, complexity, technical debt, and adherence to best practices.</p>
+                </div>
+                <div class="feature-card">
+                    <div class="feature-icon">
+                        <i class="fas fa-chart-radar"></i>
+                    </div>
+                    <h3>Honest Skill Level Score</h3>
+                    <p>AI-powered skill assessment based on actual code quality, not self-reported abilities. Get your true developer score.</p>
+                </div>
+                <div class="feature-card">
+                    <div class="feature-icon">
+                        <i class="fas fa-search"></i>
+                    </div>
+                    <h3>Traceable Code Findings</h3>
+                    <p>Every insight is linked to specific code lines, commits, or files. See exactly where improvements are needed.</p>
+                </div>
+                <div class="feature-card">
+                    <div class="feature-icon">
+                        <i class="fas fa-briefcase"></i>
+                    </div>
+                    <h3>Live Job Matching Engine</h3>
+                    <p>Real-time matching with job openings based on your verified skills. Get notified instantly about perfect matches.</p>
+                </div>
+                <div class="feature-card">
+                    <div class="feature-icon">
+                        <i class="fas fa-robot"></i>
+                    </div>
+                    <h3>AI Resume Rewriter</h3>
+                    <p>Transform your resume using AI to highlight your actual technical achievements and verified skills.</p>
+                </div>
+                <div class="feature-card">
+                    <div class="feature-icon">
+                        <i class="fas fa-route"></i>
+                    </div>
+                    <h3>90-Day ROI Roadmap</h3>
+                    <p>Personalized 90-day development plan with guaranteed skill improvement and career advancement ROI.</p>
+                </div>
+                <div class="feature-card">
+                    <div class="feature-icon">
+                        <i class="fas fa-satellite-dish"></i>
+                    </div>
+                    <h3>Skill Gap Radar Chart</h3>
+                    <p>Interactive radar visualization showing your current skills vs. job requirements. See gaps at a glance.</p>
+                </div>
+                <div class="feature-card">
+                    <div class="feature-icon">
+                        <i class="fas fa-play-circle"></i>
+                    </div>
+                    <h3>Live Analysis Animation</h3>
+                    <p>Watch your code being analyzed in real-time with beautiful visualizations and progress tracking.</p>
+                </div>
+                <div class="feature-card">
+                    <div class="feature-icon">
+                        <i class="fas fa-calculator"></i>
+                    </div>
+                    <h3>Salary Unlock Calculator</h3>
+                    <p>Calculate your potential salary increase based on skill improvements. See exactly how much each skill is worth.</p>
+                </div>
+                <div class="feature-card">
+                    <div class="feature-icon">
+                        <i class="fas fa-trophy"></i>
+                    </div>
+                    <h3>Portfolio Project Ranker</h3>
+                    <p>Rank your projects by technical complexity, innovation, and market relevance. Showcase your best work.</p>
+                </div>
+                <div class="feature-card">
+                    <div class="feature-icon">
+                        <i class="fas fa-exchange-alt"></i>
+                    </div>
+                    <h3>GitHub vs LinkedIn Gap</h3>
+                    <p>Compare your GitHub technical profile with LinkedIn professional presence. Identify and close credibility gaps.</p>
+                </div>
+            </div>
+        </section>
+
+        <section id="dashboard-demo" class="dashboard-demo-section">
+            <div class="section-header">
+                <h2 class="section-title">Live Dashboard Demo</h2>
+                <p class="section-subtitle">Experience our advanced features in action</p>
+            </div>
+            <div class="dashboard-grid">
+                <!-- Skill Gap Radar Chart -->
+                <div class="demo-card">
+                    <div class="demo-header">
+                        <h3><i class="fas fa-chart-radar"></i> Skill Gap Radar</h3>
+                    </div>
+                    <div class="demo-content">
+                        <canvas id="radarChart" width="300" height="300"></canvas>
+                        <div class="radar-legend">
+                            <span class="legend-current">Current Skills</span>
+                            <span class="legend-required">Job Requirements</span>
+                        </div>
+                    </div>
+                </div>
+
+                <!-- Salary Calculator -->
+                <div class="demo-card">
+                    <div class="demo-header">
+                        <h3><i class="fas fa-calculator"></i> Salary Unlock Calculator</h3>
+                    </div>
+                    <div class="demo-content">
+                        <div class="salary-current">
+                            <span>Current Salary</span>
+                            <h4>$75,000</h4>
+                        </div>
+                        <div class="salary-potential">
+                            <span>Potential Salary</span>
+                            <h4>$120,000</h4>
+                        </div>
+                        <div class="salary-gap">
+                            <span>+60% Increase</span>
+                            <div class="progress-bar">
+                                <div class="progress-fill" style="width: 40%"></div>
+                            </div>
+                        </div>
+                        <div class="skill-values">
+                            <div class="skill-value">
+                                <span>React.js</span>
+                                <strong>+$15,000</strong>
+                            </div>
+                            <div class="skill-value">
+                                <span>Python</span>
+                                <strong>+$12,000</strong>
+                            </div>
+                            <div class="skill-value">
+                                <span>AWS</span>
+                                <strong>+$18,000</strong>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+
+                <!-- Live Analysis Animation -->
+                <div class="demo-card">
+                    <div class="demo-header">
+                        <h3><i class="fas fa-play-circle"></i> Live Analysis</h3>
+                    </div>
+                    <div class="demo-content">
+                        <div class="analysis-stages">
+                            <div class="analysis-stage completed">
+                                <i class="fas fa-check-circle"></i>
+                                <span>Code Scanning</span>
+                            </div>
+                            <div class="analysis-stage active">
+                                <i class="fas fa-spinner fa-spin"></i>
+                                <span>Quality Analysis</span>
+                            </div>
+                            <div class="analysis-stage">
+                                <i class="fas fa-circle"></i>
+                                <span>Security Check</span>
+                            </div>
+                            <div class="analysis-stage">
+                                <i class="fas fa-circle"></i>
+                                <span>Performance Test</span>
+                            </div>
+                        </div>
+                        <div class="analysis-progress">
+                            <div class="progress-bar">
+                                <div class="progress-fill animated-gradient" style="width: 65%"></div>
+                            </div>
+                            <span>65% Complete</span>
+                        </div>
+                        <div class="analysis-findings">
+                            <div class="finding">
+                                <i class="fas fa-check text-success"></i>
+                                <span>Good code structure detected</span>
+                            </div>
+                            <div class="finding">
+                                <i class="fas fa-exclamation-triangle text-warning"></i>
+                                <span>3 security vulnerabilities found</span>
+                            </div>
+                            <div class="finding">
+                                <i class="fas fa-times text-error"></i>
+                                <span>High complexity in utils.js</span>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+
+                <!-- Portfolio Ranker -->
+                <div class="demo-card">
+                    <div class="demo-header">
+                        <h3><i class="fas fa-trophy"></i> Portfolio Ranker</h3>
+                    </div>
+                    <div class="demo-content">
+                        <div class="project-rankings">
+                            <div class="project-rank">
+                                <div class="rank-badge gold">1</div>
+                                <div class="project-info">
+                                    <h4>E-Commerce Platform</h4>
+                                    <p>React, Node.js, MongoDB</p>
+                                    <div class="project-score">
+                                        <span>Score: 9.2/10</span>
+                                        <div class="score-bar">
+                                            <div class="score-fill" style="width: 92%"></div>
+                                        </div>
+                                    </div>
+                                </div>
+                            </div>
+                            <div class="project-rank">
+                                <div class="rank-badge silver">2</div>
+                                <div class="project-info">
+                                    <h4>AI Chat Assistant</h4>
+                                    <p>Python, TensorFlow, FastAPI</p>
+                                    <div class="project-score">
+                                        <span>Score: 8.7/10</span>
+                                        <div class="score-bar">
+                                            <div class="score-fill" style="width: 87%"></div>
+                                        </div>
+                                    </div>
+                                </div>
+                            </div>
+                            <div class="project-rank">
+                                <div class="rank-badge bronze">3</div>
+                                <div class="project-info">
+                                    <h4>Weather Dashboard</h4>
+                                    <p>Vue.js, Chart.js, API</p>
+                                    <div class="project-score">
+                                        <span>Score: 7.8/10</span>
+                                        <div class="score-bar">
+                                            <div class="score-fill" style="width: 78%"></div>
+                                        </div>
+                                    </div>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+
+                <!-- GitHub vs LinkedIn Gap -->
+                <div class="demo-card">
+                    <div class="demo-header">
+                        <h3><i class="fas fa-exchange-alt"></i> GitHub vs LinkedIn Gap</h3>
+                    </div>
+                    <div class="demo-content">
+                        <div class="platform-comparison">
+                            <div class="platform github">
+                                <i class="fab fa-github"></i>
+                                <h4>GitHub Profile</h4>
+                                <div class="platform-stats">
+                                    <div class="stat">
+                                        <span>Repositories</span>
+                                        <strong>47</strong>
+                                    </div>
+                                    <div class="stat">
+                                        <span>Contributions</span>
+                                        <strong>2,341</strong>
+                                    </div>
+                                    <div class="stat">
+                                        <span>Languages</span>
+                                        <strong>8</strong>
+                                    </div>
+                                </div>
+                            </div>
+                            <div class="platform linkedin">
+                                <i class="fab fa-linkedin"></i>
+                                <h4>LinkedIn Profile</h4>
+                                <div class="platform-stats">
+                                    <div class="stat">
+                                        <span>Skills Listed</span>
+                                        <strong>12</strong>
+                                    </div>
+                                    <div class="stat">
+                                        <span>Projects</span>
+                                        <strong>3</strong>
+                                    </div>
+                                    <div class="stat">
+                                        <span>Endorsements</span>
+                                        <strong>89</strong>
+                                    </div>
+                                </div>
+                            </div>
+                        </div>
+                        <div class="gap-analysis">
+                            <h5>Gap Analysis</h5>
+                            <div class="gap-item positive">
+                                <i class="fas fa-arrow-up"></i>
+                                <span>Strong GitHub activity</span>
+                            </div>
+                            <div class="gap-item negative">
+                                <i class="fas fa-arrow-down"></i>
+                                <span>Underselling on LinkedIn</span>
+                            </div>
+                            <div class="gap-item neutral">
+                                <i class="fas fa-minus"></i>
+                                <span>Missing project showcases</span>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+
+                <!-- 90-Day ROI Roadmap -->
+                <div class="demo-card">
+                    <div class="demo-header">
+                        <h3><i class="fas fa-route"></i> 90-Day ROI Roadmap</h3>
+                    </div>
+                    <div class="demo-content">
+                        <div class="roadmap-timeline">
+                            <div class="milestone">
+                                <div class="milestone-marker completed"></div>
+                                <div class="milestone-content">
+                                    <h5>Day 1-30</h5>
+                                    <p>Foundation Skills</p>
+                                    <ul>
+                                        <li>Master React Hooks</li>
+                                        <li>Learn TypeScript</li>
+                                        <li>Build 2 projects</li>
+                                    </ul>
+                                </div>
+                            </div>
+                            <div class="milestone">
+                                <div class="milestone-marker current"></div>
+                                <div class="milestone-content">
+                                    <h5>Day 31-60</h5>
+                                    <p>Advanced Concepts</p>
+                                    <ul>
+                                        <li>System Design</li>
+                                        <li>Cloud Deployment</li>
+                                        <li>Performance Optimization</li>
+                                    </ul>
+                                </div>
+                            </div>
+                            <div class="milestone">
+                                <div class="milestone-marker upcoming"></div>
+                                <div class="milestone-content">
+                                    <h5>Day 61-90</h5>
+                                    <p>Job Ready</p>
+                                    <ul>
+                                        <li>Portfolio Enhancement</li>
+                                        <li>Interview Prep</li>
+                                        <li>Salary Negotiation</li>
+                                    </ul>
+                                </div>
+                            </div>
+                        </div>
+                        <div class="roi-projection">
+                            <span>Expected ROI: +45% Salary Increase</span>
+                            <div class="roi-meter">
+                                <div class="roi-fill" style="width: 30%"></div>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </section>
+
+        <section id="how-it-works" class="how-it-works">
+            <div class="section-header">
+                <h2 class="section-title">How It Works</h2>
+                <p class="section-subtitle">Get started in 3 simple steps</p>
+            </div>
+            <div class="steps-container">
+                <div class="step">
+                    <div class="step-number">1</div>
+                    <div class="step-content">
+                        <h3>Submit Your Code</h3>
+                        <p>Connect GitHub, share project links, or provide live application URLs.</p>
+                    </div>
+                </div>
+                <div class="step">
+                    <div class="step-number">2</div>
+                    <div class="step-content">
+                        <h3>AI Analysis</h3>
+                        <p>Our system analyzes code quality, architecture, security patterns, and more.</p>
+                    </div>
+                </div>
+                <div class="step">
+                    <div class="step-number">3</div>
+                    <div class="step-content">
+                        <h3>Get Insights</h3>
+                        <p>Receive personalized feedback, learning paths, and career recommendations.</p>
+                    </div>
+                </div>
+            </div>
+        </section>
+
+        <section id="get-started" class="cta-section">
+            <div class="cta-content">
+                <h2>Ready to Transform Your Career?</h2>
+                <p>Join thousands of developers who have already discovered their true potential.</p>
+                <div class="cta-form">
+                    <input type="text" placeholder="Enter your GitHub username or project URL" id="userInput">
+                    <button class="cta-submit" onclick="startAnalysis()">
+                        <i class="fas fa-arrow-right"></i>
+                        Start Free Analysis
+                    </button>
+                </div>
+                <p class="cta-note">Free analysis available. No credit card required.</p>
+            </div>
+        </section>
+
+        <footer class="footer">
+            <div class="footer-content">
+                <div class="footer-brand">
+                    <i class="fas fa-chart-line"></i>
+                    <span>OPEN TRACK PS</span>
+                </div>
+                <div class="footer-links">
+                    <a href="#privacy">Privacy Policy</a>
+                    <a href="#terms">Terms of Service</a>
+                    <a href="#contact">Contact</a>
+                </div>
+                <div class="footer-social">
+                    <a href="#"><i class="fab fa-twitter"></i></a>
+                    <a href="#"><i class="fab fa-linkedin"></i></a>
+                    <a href="#"><i class="fab fa-github"></i></a>
+                </div>
+            </div>
+        </footer>
+    </div>
+
+    <script src="script.js"></script>
+</body>
+</html>
