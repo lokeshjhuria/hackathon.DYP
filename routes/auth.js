@@ -15,13 +15,13 @@ const generateToken = (userId) => {
 // @desc    Register a new user
 router.post('/register', async (req, res) => {
   try {
-    const { username, email, password } = req.body;
+    const { username, email, password, name } = req.body;
 
-    // Validation
-    if (!username || !email || !password) {
+    // Validation - password is optional for CTA registration
+    if (!username || !email) {
       return res.status(400).json({
         success: false,
-        message: 'Please provide username, email, and password',
+        message: 'Please provide username and email',
       });
     }
 
@@ -41,7 +41,8 @@ router.post('/register', async (req, res) => {
     const user = new User({
       username,
       email,
-      password,
+      password: password || null, // Optional password
+      name: name || username,
     });
 
     await user.save();
@@ -58,6 +59,7 @@ router.post('/register', async (req, res) => {
           id: user._id,
           username: user.username,
           email: user.email,
+          name: user.name,
           avatar: user.avatar,
           createdAt: user.createdAt,
         },

@@ -4,6 +4,7 @@ const User = require('../models/User');
 const auth = require('../middleware/auth');
 const { analyzeGitHub, analyzeProject, analyzeLiveApp } = require('../utils/codeAnalyzer');
 const { generateJobMatches } = require('../utils/jobMatcher');
+const SkillScoringEngine = require('../utils/skillScoring');
 const router = express.Router();
 
 // @route   POST /api/analysis/start
@@ -236,6 +237,10 @@ async function processAnalysis(analysisId, type, source) {
     const analysis = await Analysis.findById(analysisId);
     if (!analysis) return;
 
+    // Update status to analyzing
+    analysis.status = 'analyzing';
+    await analysis.save();
+
     let result;
 
     switch (type) {
@@ -252,20 +257,74 @@ async function processAnalysis(analysisId, type, source) {
         throw new Error('Invalid analysis type');
     }
 
-    // Update analysis with results
+    // Get user data for skill scoring
+    const user = await User.findById(analysis.user);
+    const userExperience = {
+      general: getUserExperienceLevel(user),
+      // Add specific technology experience if available
+      ...(user.skills && user.skills.reduce((acc, skill) => {
+        acc[skill.name] = getExperienceFromLevel(skill.level);
+        return acc;
+      }, {}))
+    };
+
+    // Initialize skill scoring engine
+    const skillEngine = new SkillScoringEngine();
+    
+    // Calculate honest skill scores
+    const skillScores = skillEngine.calculateSkillScore(result, userExperience);
+    const skillAssessments = skillEngine.generateHonestAssessment(skillScores);
+    const skillSummary = skillEngine.generateSkillSummary(skillScores);
+
+    // Update user's verified skills
+    await updateUserSkills(user, skillScores);
+
+    // Generate traceable code findings
+    const traceableFindings = generateTraceableFindings(result, skillScores);
+
+    // Generate AI resume content
+    const resumeContent = generateResumeContent(skillAssessments, result);
+
+    // Generate 90-day ROI roadmap
+    const roadmap = generateROIroadmap(skillAssessments, skillSummary);
+
+    // Update analysis with comprehensive results
     Object.assign(analysis, result);
     analysis.status = 'completed';
     analysis.metadata.analysisDuration = Math.floor((Date.now() - analysis.createdAt.getTime()) / 1000);
+    
+    // Add skill scoring results
+    analysis.skillScores = skillScores;
+    analysis.skillAssessments = skillAssessments;
+    analysis.skillSummary = skillSummary;
+    analysis.traceableFindings = traceableFindings;
+    analysis.resumeBulletPoints = resumeContent.bulletPoints;
+    analysis.recommendations = [
+      ...resumeContent.recommendations,
+      ...roadmap.recommendations
+    ];
 
-    // Generate job matches
-    analysis.jobMatches = await generateJobMatches(analysis);
+    // Generate job matches with verified skills
+    analysis.jobMatches = await generateJobMatches(analysis, skillScores);
 
     await analysis.save();
 
-    // Update user stats
-    const user = await User.findById(analysis.user);
+    // Update user stats and skills
     user.analyses.push(analysis._id);
+    user.skills = user.skills.map(skill => {
+      if (skillScores[skill.name]) {
+        return {
+          ...skill,
+          level: skillScores[skill.name].score,
+          verified: true,
+          lastAssessed: new Date()
+        };
+      }
+      return skill;
+    });
     await user.updateStats();
+
+    console.log(`Analysis ${analysisId} completed successfully`);
 
   } catch (error) {
     console.error('Analysis processing error:', error);
@@ -280,6 +339,253 @@ async function processAnalysis(analysisId, type, source) {
       await analysis.save();
     }
   }
+}
+
+// Helper functions
+function getUserExperienceLevel(user) {
+  if (!user.stats || !user.stats.totalAnalyses) return 'beginner';
+  
+  const avgScore = user.stats.averageScore || 0;
+  const totalAnalyses = user.stats.totalAnalyses;
+  
+  if (avgScore >= 8.5 && totalAnalyses >= 3) return 'senior';
+  if (avgScore >= 7 && totalAnalyses >= 2) return 'mid';
+  if (avgScore >= 5 && totalAnalyses >= 1) return 'junior';
+  return 'beginner';
+}
+
+function getExperienceFromLevel(level) {
+  if (level >= 9) return 'senior';
+  if (level >= 7) return 'mid';
+  if (level >= 5) return 'junior';
+  return 'beginner';
+}
+
+async function updateUserSkills(user, skillScores) {
+  const currentSkills = user.skills || [];
+  
+  Object.entries(skillScores).forEach(([skillName, skillData]) => {
+    const existingSkill = currentSkills.find(s => s.name === skillName);
+    
+    if (existingSkill) {
+      // Update existing skill with verified score
+      existingSkill.level = skillData.score;
+      existingSkill.verified = true;
+      existingSkill.lastAssessed = new Date();
+    } else {
+      // Add new verified skill
+      currentSkills.push({
+        name: skillName,
+        level: skillData.score,
+        verified: true,
+        lastAssessed: new Date()
+      });
+    }
+  });
+  
+  user.skills = currentSkills;
+  await user.save();
+}
+
+function generateTraceableFindings(analysisResult, skillScores) {
+  const findings = [];
+  
+  // Add code quality findings
+  if (analysisResult.categories.codeQuality) {
+    const cq = analysisResult.categories.codeQuality;
+    cq.issues.forEach(issue => {
+      findings.push({
+        type: 'issue',
+        category: 'code-quality',
+        description: issue,
+        severity: 'medium',
+        impact: 'Affects maintainability and readability',
+        recommendation: 'Refactor to improve code structure',
+        traceable: true
+      });
+    });
+    
+    cq.strengths.forEach(strength => {
+      findings.push({
+        type: 'strength',
+        category: 'code-quality',
+        description: strength,
+        impact: 'Positive impact on code maintainability',
+        traceable: true
+      });
+    });
+  }
+  
+  // Add security findings
+  if (analysisResult.categories.security) {
+    const sec = analysisResult.categories.security;
+    sec.vulnerabilities.forEach(vuln => {
+      findings.push({
+        type: 'vulnerability',
+        category: 'security',
+        description: vuln.description,
+        severity: vuln.severity,
+        location: vuln.location,
+        impact: 'Security risk that could be exploited',
+        recommendation: 'Fix immediately to prevent security breaches',
+        traceable: true
+      });
+    });
+  }
+  
+  // Add skill-specific findings
+  Object.entries(skillScores).forEach(([skill, data]) => {
+    data.evidence.forEach(evidence => {
+      findings.push({
+        type: 'skill-evidence',
+        category: 'skill-assessment',
+        skill: skill,
+        description: evidence,
+        confidence: data.confidence,
+        traceable: true
+      });
+    });
+  });
+  
+  return findings;
+}
+
+function generateResumeContent(skillAssessments, analysisResult) {
+  const bulletPoints = [];
+  const recommendations = [];
+  
+  // Generate bullet points based on verified skills
+  skillAssessments.forEach(assessment => {
+    if (assessment.score >= 7) {
+      bulletPoints.push({
+        skill: assessment.skill,
+        achievement: `Demonstrated ${assessment.level.toLowerCase()} expertise in ${assessment.skill}`,
+        metrics: `Skill score: ${assessment.score}/10 with ${Math.round(assessment.confidence * 100)}% confidence`,
+        impact: assessment.realityCheck
+      });
+    }
+  });
+  
+  // Add project-specific achievements
+  if (analysisResult.metadata) {
+    const meta = analysisResult.metadata;
+    if (meta.linesOfCode > 5000) {
+      bulletPoints.push({
+        skill: 'Software Development',
+        achievement: 'Developed and maintained large-scale codebase',
+        metrics: `${meta.linesOfCode.toLocaleString()}+ lines of code across ${meta.filesAnalyzed} files`,
+        impact: 'Demonstrates ability to handle complex projects'
+      });
+    }
+  }
+  
+  // Generate recommendations
+  if (skillAssessments.length < 3) {
+    recommendations.push({
+      priority: 'medium',
+      title: 'Expand Skill Set',
+      description: 'Consider learning additional technologies to broaden your expertise'
+    });
+  }
+  
+  const weakSkills = skillAssessments.filter(s => s.score < 6);
+  if (weakSkills.length > 0) {
+    recommendations.push({
+      priority: 'high',
+      title: 'Address Skill Gaps',
+      description: `Focus on improving: ${weakSkills.map(s => s.skill).join(', ')}`
+    });
+  }
+  
+  return {
+    bulletPoints,
+    recommendations
+  };
+}
+
+function generateROIroadmap(skillAssessments, skillSummary) {
+  const roadmap = {
+    phases: [],
+    recommendations: [],
+    expectedROI: 0
+  };
+  
+  // Phase 1: Foundation (Days 1-30)
+  const foundationSkills = skillAssessments.filter(s => s.score < 6);
+  roadmap.phases.push({
+    phase: 'Foundation Skills',
+    days: '1-30',
+    focus: foundationSkills.map(s => s.skill),
+    activities: foundationSkills.map(skill => ({
+      skill: skill.skill,
+      action: `Complete online courses and practice projects for ${skill.skill}`,
+      target: Math.min(skill.score + 2, 7),
+      resources: ['Online courses', 'Documentation', 'Practice projects']
+    })),
+    expectedImprovement: '20-30% skill score increase'
+  });
+  
+  // Phase 2: Advanced (Days 31-60)
+  const advancedSkills = skillAssessments.filter(s => s.score >= 6 && s.score < 8);
+  roadmap.phases.push({
+    phase: 'Advanced Concepts',
+    days: '31-60',
+    focus: advancedSkills.map(s => s.skill),
+    activities: advancedSkills.map(skill => ({
+      skill: skill.skill,
+      action: `Build advanced projects and contribute to open source in ${skill.skill}`,
+      target: Math.min(skill.score + 1.5, 8.5),
+      resources: ['Open source contributions', 'Advanced tutorials', 'Mentorship']
+    })),
+    expectedImprovement: '15-25% skill score increase'
+  });
+  
+  // Phase 3: Job Ready (Days 61-90)
+  roadmap.phases.push({
+    phase: 'Job Preparation',
+    days: '61-90',
+    focus: ['Interview Skills', 'Portfolio Building', 'Networking'],
+    activities: [
+      {
+        skill: 'Interview Preparation',
+        action: 'Practice technical interviews and build portfolio',
+        target: 'Job ready',
+        resources: ['Mock interviews', 'Portfolio projects', 'Networking events']
+      }
+    ],
+    expectedImprovement: 'Ready for job applications'
+  });
+  
+  // Calculate expected ROI
+  const currentMarketValue = skillAssessments.reduce((sum, s) => sum + s.marketValue, 0);
+  const potentialMarketValue = skillAssessments.reduce((sum, s) => {
+    const targetScore = Math.min(s.score + 2, 9);
+    const scoreMultiplier = targetScore / s.score;
+    return sum + (s.marketValue * scoreMultiplier);
+  }, 0);
+  
+  roadmap.expectedROI = Math.round(((potentialMarketValue - currentMarketValue) / currentMarketValue) * 100);
+  
+  // Generate recommendations
+  roadmap.recommendations = [
+    {
+      priority: 'high',
+      title: 'Consistent Daily Practice',
+      description: 'Dedicate 2-3 hours daily to skill development'
+    },
+    {
+      priority: 'medium',
+      title: 'Build Real Projects',
+      description: 'Apply skills to practical projects rather than just tutorials'
+    },
+    {
+      priority: 'medium',
+      title: 'Get Feedback',
+      description: 'Seek code reviews and mentorship to accelerate growth'
+    }
+  ];
+  
+  return roadmap;
 }
 
 module.exports = router;

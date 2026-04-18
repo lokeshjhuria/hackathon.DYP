@@ -52,15 +52,59 @@ wheelSegments.forEach(segment => {
     });
 });
 
+// Toggle problem card details
+function toggleProblemDetail(detailId) {
+    const detail = document.getElementById(detailId);
+    const card = detail.closest('.problem-card');
+    const allDetails = document.querySelectorAll('.problem-detail');
+    const allCards = document.querySelectorAll('.problem-card');
+    
+    // Close all other details
+    allDetails.forEach(otherDetail => {
+        if (otherDetail.id !== detailId) {
+            otherDetail.classList.remove('show');
+            otherDetail.closest('.problem-card').classList.remove('expanded');
+        }
+    });
+    
+    // Toggle current detail
+    if (detail.classList.contains('show')) {
+        detail.classList.remove('show');
+        card.classList.remove('expanded');
+    } else {
+        detail.classList.add('show');
+        card.classList.add('expanded');
+        
+        // Smooth scroll to the card if it's partially out of view
+        setTimeout(() => {
+            const rect = card.getBoundingClientRect();
+            const isInViewport = rect.top >= 0 && rect.bottom <= window.innerHeight;
+            
+            if (!isInViewport) {
+                card.scrollIntoView({ 
+                    behavior: 'smooth', 
+                    block: 'center' 
+                });
+            }
+        }, 100);
+    }
+}
+
 // API Configuration
 const API_BASE_URL = process.env.NODE_ENV === 'production' 
   ? 'https://your-api-domain.com/api' 
   : 'http://localhost:5000/api';
 
-// Store auth token
-let authToken = localStorage.getItem('opentrack_token');
+// Store auth token - initialize safely
+let authToken = null;
 
-// Form submission handler
+// Initialize auth token when DOM is ready
+function initializeAuthToken() {
+  authToken = safeLocalStorageGet('opentrack_token');
+  console.log('Auth token initialized:', authToken ? 'found' : 'not found');
+}
+
+// Enhanced form submission handler
 async function startAnalysis() {
     const input = document.getElementById('userInput');
     const value = input.value.trim();
@@ -77,6 +121,14 @@ async function startAnalysis() {
     submitButton.disabled = true;
     
     try {
+        console.log('Starting analysis with input:', value);
+        
+        // Check if server is running
+        const healthCheck = await checkServerHealth();
+        if (!healthCheck) {
+            throw new Error('Backend server is not running. Please start the server first.');
+        }
+        
         // Determine analysis type
         let analysisType, source;
         
@@ -88,19 +140,24 @@ async function startAnalysis() {
                     githubUsername: match[1],
                     repositoryName: match[2],
                 };
+                console.log('GitHub URL detected:', source);
             } else {
-                throw new Error('Invalid GitHub URL format');
+                throw new Error('Invalid GitHub URL format. Use: https://github.com/username/repository');
             }
         } else if (value.startsWith('http')) {
             analysisType = 'live_app';
             source = { url: value };
+            console.log('Live app URL detected:', source);
         } else {
             analysisType = 'github';
             source = {
                 githubUsername: value,
                 repositoryName: null, // Will be determined by user or API
             };
+            console.log('GitHub username detected:', source);
         }
+        
+        console.log('Analysis payload:', { type: analysisType, source });
         
         // Start analysis
         const response = await apiCall('/analysis/start', 'POST', {
@@ -108,9 +165,14 @@ async function startAnalysis() {
             source,
         });
         
+        console.log('API response:', response);
+        
         if (response.success) {
             showNotification('Analysis started! We\'ll notify you when it\'s complete.', 'success');
             input.value = '';
+            
+            // Show analysis progress
+            showAnalysisProgress(response.data.analysisId);
             
             // Poll for analysis completion
             pollAnalysisStatus(response.data.analysisId);
@@ -120,6 +182,11 @@ async function startAnalysis() {
         
     } catch (error) {
         console.error('Analysis error:', error);
+        console.error('Error details:', {
+            message: error.message,
+            stack: error.stack,
+            input: value
+        });
         showNotification(error.message || 'Failed to start analysis', 'error');
     } finally {
         submitButton.innerHTML = originalContent;
@@ -127,8 +194,578 @@ async function startAnalysis() {
     }
 }
 
+// Check server health
+async function checkServerHealth() {
+    try {
+        const response = await fetch(`${API_BASE_URL}/health`, {
+            method: 'GET',
+            headers: {
+                'Content-Type': 'application/json',
+            },
+        });
+        
+        if (response.ok) {
+            const health = await response.json();
+            console.log('Server health check passed:', health.data);
+            return true;
+        } else {
+            console.error('Server health check failed:', response.status);
+            return false;
+        }
+    } catch (error) {
+        console.error('Server health check error:', error);
+        return false;
+    }
+}
+
+// Show analysis progress UI
+function showAnalysisProgress(analysisId) {
+    // Create or update progress modal
+    let progressModal = document.getElementById('analysisProgressModal');
+    if (!progressModal) {
+        progressModal = createAnalysisProgressModal();
+        document.body.appendChild(progressModal);
+    }
+    
+    progressModal.style.display = 'flex';
+    progressModal.dataset.analysisId = analysisId;
+    
+    // Start progress animation
+    updateAnalysisProgress(0);
+}
+
+// Create analysis progress modal
+function createAnalysisProgressModal() {
+    const modal = document.createElement('div');
+    modal.id = 'analysisProgressModal';
+    modal.className = 'analysis-progress-modal';
+    modal.innerHTML = `
+        <div class="progress-modal-content">
+            <div class="progress-header">
+                <h3><i class="fas fa-code"></i> Analyzing Your Code</h3>
+                <button class="close-btn" onclick="closeAnalysisProgress()">&times;</button>
+            </div>
+            <div class="progress-body">
+                <div class="progress-stages">
+                    <div class="progress-stage" data-stage="fetching">
+                        <i class="fas fa-download"></i>
+                        <span>Fetching Code</span>
+                        <div class="stage-status"></div>
+                    </div>
+                    <div class="progress-stage" data-stage="analyzing">
+                        <i class="fas fa-search"></i>
+                        <span>Analyzing Quality</span>
+                        <div class="stage-status"></div>
+                    </div>
+                    <div class="progress-stage" data-stage="scoring">
+                        <i class="fas fa-chart-line"></i>
+                        <span>Calculating Skills</span>
+                        <div class="stage-status"></div>
+                    </div>
+                    <div class="progress-stage" data-stage="matching">
+                        <i class="fas fa-briefcase"></i>
+                        <span>Matching Jobs</span>
+                        <div class="stage-status"></div>
+                    </div>
+                </div>
+                <div class="progress-bar-container">
+                    <div class="progress-bar">
+                        <div class="progress-fill" id="analysisProgressFill"></div>
+                    </div>
+                    <span class="progress-percentage" id="progressPercentage">0%</span>
+                </div>
+                <div class="progress-details">
+                    <p id="progressStatus">Initializing analysis...</p>
+                </div>
+            </div>
+        </div>
+    `;
+    
+    // Add styles
+    const style = document.createElement('style');
+    style.textContent = `
+        .analysis-progress-modal {
+            position: fixed;
+            top: 0;
+            left: 0;
+            width: 100%;
+            height: 100%;
+            background: rgba(0, 0, 0, 0.8);
+            display: flex;
+            justify-content: center;
+            align-items: center;
+            z-index: 10000;
+        }
+        
+        .progress-modal-content {
+            background: var(--dark-bg);
+            border: 1px solid rgba(255, 255, 255, 0.1);
+            border-radius: 15px;
+            padding: 2rem;
+            max-width: 500px;
+            width: 90%;
+            max-height: 80vh;
+            overflow-y: auto;
+        }
+        
+        .progress-header {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            margin-bottom: 2rem;
+        }
+        
+        .progress-header h3 {
+            color: var(--text-primary);
+            display: flex;
+            align-items: center;
+            gap: 0.5rem;
+        }
+        
+        .close-btn {
+            background: none;
+            border: none;
+            color: var(--text-secondary);
+            font-size: 1.5rem;
+            cursor: pointer;
+        }
+        
+        .progress-stages {
+            display: grid;
+            grid-template-columns: 1fr 1fr;
+            gap: 1rem;
+            margin-bottom: 2rem;
+        }
+        
+        .progress-stage {
+            text-align: center;
+            padding: 1rem;
+            border: 1px solid rgba(255, 255, 255, 0.1);
+            border-radius: 10px;
+            transition: all 0.3s ease;
+        }
+        
+        .progress-stage.active {
+            border-color: var(--primary-color);
+            background: rgba(231, 76, 60, 0.1);
+        }
+        
+        .progress-stage.completed {
+            border-color: var(--success-color);
+            background: rgba(34, 197, 94, 0.1);
+        }
+        
+        .progress-stage i {
+            font-size: 1.5rem;
+            margin-bottom: 0.5rem;
+            display: block;
+        }
+        
+        .progress-stage.active i {
+            color: var(--primary-color);
+            animation: pulse 1.5s infinite;
+        }
+        
+        .progress-stage.completed i {
+            color: var(--success-color);
+        }
+        
+        .progress-bar-container {
+            margin-bottom: 1rem;
+        }
+        
+        .progress-bar {
+            background: var(--dark-secondary);
+            border-radius: 10px;
+            height: 8px;
+            overflow: hidden;
+        }
+        
+        .progress-fill {
+            background: var(--gradient-4);
+            height: 100%;
+            width: 0%;
+            transition: width 0.3s ease;
+        }
+        
+        .progress-percentage {
+            color: var(--text-primary);
+            font-weight: 600;
+        }
+        
+        .progress-details p {
+            color: var(--text-secondary);
+            text-align: center;
+        }
+    `;
+    modal.appendChild(style);
+    
+    return modal;
+}
+
+// Update analysis progress
+function updateAnalysisProgress(percentage) {
+    const fill = document.getElementById('analysisProgressFill');
+    const percentageText = document.getElementById('progressPercentage');
+    
+    if (fill) fill.style.width = percentage + '%';
+    if (percentageText) percentageText.textContent = percentage + '%';
+    
+    // Update stages based on progress
+    const stages = document.querySelectorAll('.progress-stage');
+    stages.forEach((stage, index) => {
+        const stageProgress = (index + 1) * 25;
+        if (percentage >= stageProgress) {
+            stage.classList.add('completed');
+            stage.classList.remove('active');
+            const status = stage.querySelector('.stage-status');
+            if (status) status.innerHTML = '<i class="fas fa-check"></i>';
+        } else if (percentage >= index * 25) {
+            stage.classList.add('active');
+            stage.classList.remove('completed');
+            const status = stage.querySelector('.stage-status');
+            if (status) status.innerHTML = '<i class="fas fa-spinner fa-spin"></i>';
+        } else {
+            stage.classList.remove('active', 'completed');
+            const status = stage.querySelector('.stage-status');
+            if (status) status.innerHTML = '';
+        }
+    });
+}
+
+// Close analysis progress
+function closeAnalysisProgress() {
+    const modal = document.getElementById('analysisProgressModal');
+    if (modal) modal.style.display = 'none';
+}
+
+// Enhanced polling with real progress updates
+async function pollAnalysisStatus(analysisId) {
+    const maxAttempts = 60; // 5 minutes max
+    let attempts = 0;
+    let progress = 0;
+    
+    const poll = async () => {
+        try {
+            const response = await apiCall(`/analysis/${analysisId}`);
+            
+            if (response.data.analysis.status === 'completed') {
+                updateAnalysisProgress(100);
+                closeAnalysisProgress();
+                
+                showNotification('Analysis complete! Redirecting to results...', 'success');
+                
+                // Show results
+                setTimeout(() => {
+                    showAnalysisResults(response.data.analysis);
+                }, 1000);
+                
+            } else if (response.data.analysis.status === 'failed') {
+                closeAnalysisProgress();
+                showNotification('Analysis failed: ' + (response.data.analysis.error?.message || 'Unknown error'), 'error');
+                
+            } else if (response.data.analysis.status === 'analyzing') {
+                // Update progress based on analysis duration
+                progress = Math.min(progress + 5, 90);
+                updateAnalysisProgress(progress);
+                
+                if (attempts < maxAttempts) {
+                    attempts++;
+                    setTimeout(poll, 3000); // Poll every 3 seconds
+                } else {
+                    closeAnalysisProgress();
+                    showNotification('Analysis is taking longer than expected. Please check back later.', 'warning');
+                }
+            } else {
+                // Still pending
+                if (attempts < maxAttempts) {
+                    attempts++;
+                    setTimeout(poll, 2000);
+                }
+            }
+        } catch (error) {
+            console.error('Polling error:', error);
+            if (attempts < maxAttempts) {
+                attempts++;
+                setTimeout(poll, 5000);
+            }
+        }
+    };
+    
+    poll();
+}
+
+// Show analysis results
+function showAnalysisResults(analysis) {
+    // Create results modal
+    let resultsModal = document.getElementById('analysisResultsModal');
+    if (!resultsModal) {
+        resultsModal = createResultsModal();
+        document.body.appendChild(resultsModal);
+    }
+    
+    // Populate results
+    populateResultsModal(analysis);
+    resultsModal.style.display = 'flex';
+}
+
+// Create results modal
+function createResultsModal() {
+    const modal = document.createElement('div');
+    modal.id = 'analysisResultsModal';
+    modal.className = 'analysis-results-modal';
+    modal.innerHTML = `
+        <div class="results-modal-content">
+            <div class="results-header">
+                <h2><i class="fas fa-chart-line"></i> Analysis Results</h2>
+                <button class="close-btn" onclick="closeResultsModal()">&times;</button>
+            </div>
+            <div class="results-body">
+                <div class="results-tabs">
+                    <button class="tab-btn active" data-tab="overview">Overview</button>
+                    <button class="tab-btn" data-tab="skills">Skills</button>
+                    <button class="tab-btn" data-tab="findings">Code Findings</button>
+                    <button class="tab-btn" data-tab="jobs">Job Matches</button>
+                    <button class="tab-btn" data-tab="roadmap">90-Day Plan</button>
+                </div>
+                <div class="results-content">
+                    <div class="tab-content active" id="overview-tab"></div>
+                    <div class="tab-content" id="skills-tab"></div>
+                    <div class="tab-content" id="findings-tab"></div>
+                    <div class="tab-content" id="jobs-tab"></div>
+                    <div class="tab-content" id="roadmap-tab"></div>
+                </div>
+            </div>
+        </div>
+    `;
+    
+    // Add tab switching
+    modal.querySelectorAll('.tab-btn').forEach(btn => {
+        btn.addEventListener('click', function() {
+            const tabName = this.dataset.tab;
+            switchTab(tabName);
+        });
+    });
+    
+    return modal;
+}
+
+// Switch tabs
+function switchTab(tabName) {
+    // Update buttons
+    document.querySelectorAll('.tab-btn').forEach(btn => {
+        btn.classList.toggle('active', btn.dataset.tab === tabName);
+    });
+    
+    // Update content
+    document.querySelectorAll('.tab-content').forEach(content => {
+        content.classList.toggle('active', content.id === `${tabName}-tab`);
+    });
+}
+
+// Close results modal
+function closeResultsModal() {
+    const modal = document.getElementById('analysisResultsModal');
+    if (modal) modal.style.display = 'none';
+}
+
+// Populate results modal with data
+function populateResultsModal(analysis) {
+    // Overview tab
+    const overviewTab = document.getElementById('overview-tab');
+    if (overviewTab && analysis.skillSummary) {
+        const summary = analysis.skillSummary;
+        overviewTab.innerHTML = `
+            <div class="summary-grid">
+                <div class="summary-card">
+                    <h3>Overall Level</h3>
+                    <div class="score-display">${summary.overallLevel}</div>
+                    <p>Average Score: ${summary.averageScore}/10</p>
+                </div>
+                <div class="summary-card">
+                    <h3>Total Skills</h3>
+                    <div class="score-display">${summary.totalSkills}</div>
+                    <p>Verified Skills</p>
+                </div>
+                <div class="summary-card">
+                    <h3>Strongest Skill</h3>
+                    <div class="score-display">${summary.strongestSkill}</div>
+                    <p>Score: ${summary.strongestScore}/10</p>
+                </div>
+                <div class="summary-card">
+                    <h3>Job Readiness</h3>
+                    <div class="score-display">${summary.readiness}</div>
+                    <p>Based on analysis</p>
+                </div>
+            </div>
+            <div class="recommendations">
+                <h3>Recommendations</h3>
+                ${summary.recommendations.map(rec => `
+                    <div class="recommendation-item priority-${rec.priority}">
+                        <strong>${rec.title}</strong>
+                        <p>${rec.description}</p>
+                    </div>
+                `).join('')}
+            </div>
+        `;
+    }
+    
+    // Skills tab
+    const skillsTab = document.getElementById('skills-tab');
+    if (skillsTab && analysis.skillAssessments) {
+        skillsTab.innerHTML = `
+            <div class="skills-grid">
+                ${analysis.skillAssessments.map(skill => `
+                    <div class="skill-card">
+                        <div class="skill-header">
+                            <h3>${skill.skill}</h3>
+                            <div class="skill-score">${skill.score}/10</div>
+                        </div>
+                        <div class="skill-level">${skill.level}</div>
+                        <div class="skill-confidence">Confidence: ${Math.round(skill.confidence * 100)}%</div>
+                        <div class="skill-evidence">
+                            <h4>Evidence:</h4>
+                            <ul>
+                                ${skill.evidence.map(evidence => `<li>${evidence}</li>`).join('')}
+                            </ul>
+                        </div>
+                        <div class="skill-reality">
+                            <strong>Reality Check:</strong> ${skill.realityCheck}
+                        </div>
+                        <div class="skill-gap">
+                            <strong>Skill Gap:</strong> ${skill.gap}
+                        </div>
+                    </div>
+                `).join('')}
+            </div>
+        `;
+    }
+    
+    // Findings tab
+    const findingsTab = document.getElementById('findings-tab');
+    if (findingsTab && analysis.traceableFindings) {
+        findingsTab.innerHTML = `
+            <div class="findings-container">
+                ${analysis.traceableFindings.map(finding => `
+                    <div class="finding-item type-${finding.type} severity-${finding.severity || 'medium'}">
+                        <div class="finding-header">
+                            <h3>${finding.type.replace('-', ' ').toUpperCase()}</h3>
+                            <span class="finding-category">${finding.category}</span>
+                        </div>
+                        <p class="finding-description">${finding.description}</p>
+                        ${finding.location ? `<p class="finding-location"><strong>Location:</strong> ${finding.location}</p>` : ''}
+                        ${finding.impact ? `<p class="finding-impact"><strong>Impact:</strong> ${finding.impact}</p>` : ''}
+                        ${finding.recommendation ? `<p class="finding-recommendation"><strong>Recommendation:</strong> ${finding.recommendation}</p>` : ''}
+                        ${finding.confidence ? `<p class="finding-confidence"><strong>Confidence:</strong> ${Math.round(finding.confidence * 100)}%</p>` : ''}
+                    </div>
+                `).join('')}
+            </div>
+        `;
+    }
+    
+    // Jobs tab
+    const jobsTab = document.getElementById('jobs-tab');
+    if (jobsTab && analysis.jobMatches) {
+        jobsTab.innerHTML = `
+            <div class="jobs-container">
+                ${analysis.jobMatches.map(job => `
+                    <div class="job-card ${job.isLive ? 'live-job' : ''}">
+                        <div class="job-header">
+                            <h3>${job.jobTitle}</h3>
+                            <span class="job-company">${job.company}</span>
+                            ${job.isLive ? '<span class="live-badge">LIVE</span>' : ''}
+                        </div>
+                        <div class="job-match">
+                            <div class="match-score">Match: ${Math.round(job.matchScore * 100)}%</div>
+                            <div class="match-bar">
+                                <div class="match-fill" style="width: ${job.matchScore * 100}%"></div>
+                            </div>
+                        </div>
+                        <div class="job-details">
+                            <p><strong>Salary:</strong> ${job.salary}</p>
+                            <p><strong>Location:</strong> ${job.location}</p>
+                            <div class="job-skills">
+                                <strong>Required Skills:</strong>
+                                <div class="skill-tags">
+                                    ${job.requiredSkills.map(skill => `
+                                        <span class="skill-tag ${job.missingSkills && job.missingSkills.includes(skill) ? 'missing' : 'matched'}">
+                                            ${skill}
+                                        </span>
+                                    `).join('')}
+                                </div>
+                            </div>
+                            ${job.description ? `<p class="job-description">${job.description}</p>` : ''}
+                        </div>
+                        <div class="job-actions">
+                            <a href="${job.url}" target="_blank" class="apply-btn">Apply Now</a>
+                            ${job.recommendations ? `
+                                <div class="job-recommendations">
+                                    ${job.recommendations.map(rec => `
+                                        <div class="job-rec priority-${rec.priority}">
+                                            ${rec.message}
+                                        </div>
+                                    `).join('')}
+                                </div>
+                            ` : ''}
+                        </div>
+                    </div>
+                `).join('')}
+            </div>
+        `;
+    }
+    
+    // Roadmap tab
+    const roadmapTab = document.getElementById('roadmap-tab');
+    if (roadmapTab) {
+        // This would be populated with the 90-day ROI roadmap data
+        roadmapTab.innerHTML = `
+            <div class="roadmap-container">
+                <h3>90-Day ROI Roadmap</h3>
+                <div class="roi-summary">
+                    <div class="roi-card">
+                        <h4>Expected ROI</h4>
+                        <div class="roi-percentage">+45%</div>
+                        <p>Potential salary increase</p>
+                    </div>
+                </div>
+                <div class="roadmap-phases">
+                    <div class="phase">
+                        <h4>Phase 1: Foundation (Days 1-30)</h4>
+                        <ul>
+                            <li>Focus on core skill development</li>
+                            <li>Complete online courses</li>
+                            <li>Build practice projects</li>
+                        </ul>
+                    </div>
+                    <div class="phase">
+                        <h4>Phase 2: Advanced (Days 31-60)</h4>
+                        <ul>
+                            <li>Advanced concepts and patterns</li>
+                            <li>Open source contributions</li>
+                            <li>Mentorship and networking</li>
+                        </ul>
+                    </div>
+                    <div class="phase">
+                        <h4>Phase 3: Job Ready (Days 61-90)</h4>
+                        <ul>
+                            <li>Portfolio enhancement</li>
+                            <li>Interview preparation</li>
+                            <li>Active job searching</li>
+                        </ul>
+                    </div>
+                </div>
+            </div>
+        `;
+    }
+}
+
 // API call helper function
 async function apiCall(endpoint, method = 'GET', data = null) {
+    // Ensure auth token is initialized
+    if (authToken === null) {
+        initializeAuthToken();
+    }
+    
     const config = {
         method,
         headers: {
@@ -136,6 +773,7 @@ async function apiCall(endpoint, method = 'GET', data = null) {
         },
     };
     
+    // Add auth token if available
     if (authToken) {
         config.headers.Authorization = `Bearer ${authToken}`;
     }
@@ -144,14 +782,19 @@ async function apiCall(endpoint, method = 'GET', data = null) {
         config.body = JSON.stringify(data);
     }
     
-    const response = await fetch(`${API_BASE_URL}${endpoint}`, config);
-    const result = await response.json();
-    
-    if (!response.ok) {
-        throw new Error(result.message || 'API request failed');
+    try {
+        const response = await fetch(`${API_BASE_URL}${endpoint}`, config);
+        const result = await response.json();
+        
+        if (!response.ok) {
+            throw new Error(result.message || 'API request failed');
+        }
+        
+        return result;
+    } catch (error) {
+        console.error('API call error:', error);
+        throw error;
     }
-    
-    return result;
 }
 
 // Poll analysis status
@@ -193,7 +836,7 @@ async function register(userData) {
         const response = await apiCall('/auth/register', 'POST', userData);
         if (response.success) {
             authToken = response.data.token;
-            localStorage.setItem('opentrack_token', authToken);
+            safeLocalStorageSet('opentrack_token', authToken);
             showNotification('Registration successful!', 'success');
             return response.data.user;
         }
@@ -208,7 +851,7 @@ async function login(email, password) {
         const response = await apiCall('/auth/login', 'POST', { email, password });
         if (response.success) {
             authToken = response.data.token;
-            localStorage.setItem('opentrack_token', authToken);
+            safeLocalStorageSet('opentrack_token', authToken);
             showNotification('Login successful!', 'success');
             return response.data.user;
         }
@@ -387,8 +1030,6 @@ function addStaggeredAnimations() {
         container.classList.add('stagger-animation');
     });
 }
-
-// Enhanced form interactions
 function enhanceForms() {
     const inputs = document.querySelectorAll('input[type="text"], input[type="email"], input[type="password"]');
     
@@ -409,6 +1050,64 @@ function enhanceForms() {
             }
         });
     });
+}
+
+// DOM Ready Event Listener
+document.addEventListener('DOMContentLoaded', function() {
+    // Initialize auth token first
+    initializeAuthToken();
+    
+    // Initialize other components
+    initializeComponents();
+    
+    console.log('DCIS initialized successfully');
+});
+
+// Initialize all components
+function initializeComponents() {
+    // Input field real-time validation
+    const userInput = document.getElementById('userInput');
+    
+    if (userInput) {
+        userInput.addEventListener('input', function() {
+            // Clear error when user starts typing
+            if (this.value.trim()) {
+                clearInputError();
+            }
+        });
+        
+        userInput.addEventListener('blur', function() {
+            // Validate on blur if field has content
+            if (this.value.trim()) {
+                validateInput(this.value.trim());
+            }
+        });
+    }
+    
+    // Initialize other UI components
+    initializeNavigation();
+    initializeAnimations();
+    initializeIntersectionObserver();
+}
+
+// Safe localStorage helper
+function safeLocalStorageGet(key) {
+    try {
+        return localStorage.getItem(key);
+    } catch (error) {
+        console.warn('localStorage access denied:', error);
+        return null;
+    }
+}
+
+function safeLocalStorageSet(key, value) {
+    try {
+        localStorage.setItem(key, value);
+        return true;
+    } catch (error) {
+        console.warn('localStorage access denied:', error);
+        return false;
+    }
 }
 
 // Add loading dots animation
@@ -1228,12 +1927,12 @@ function toggleTheme() {
     if (currentTheme === 'light') {
         html.removeAttribute('data-theme');
         themeIcon.className = 'fas fa-moon';
-        localStorage.setItem('theme', 'dark');
+        safeLocalStorageSet('theme', 'dark');
         showNotification('Switched to dark mode', 'success');
     } else {
         html.setAttribute('data-theme', 'light');
         themeIcon.className = 'fas fa-sun';
-        localStorage.setItem('theme', 'light');
+        safeLocalStorageSet('theme', 'light');
         showNotification('Switched to light mode', 'success');
     }
     

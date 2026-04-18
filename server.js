@@ -12,6 +12,7 @@ const analysisRoutes = require('./routes/analysis');
 const githubRoutes = require('./routes/github');
 const userRoutes = require('./routes/users');
 const dashboardRoutes = require('./routes/dashboard');
+const healthRoutes = require('./routes/health');
 
 const app = express();
 const PORT = process.env.PORT || 5000;
@@ -53,6 +54,7 @@ app.use(express.urlencoded({ extended: true }));
 app.use(express.static(path.join(__dirname, 'public')));
 
 // API Routes
+app.use('/api/health', healthRoutes);
 app.use('/api/auth', authRoutes);
 app.use('/api/analysis', analysisRoutes);
 app.use('/api/github', githubRoutes);

@@ -18,10 +18,10 @@
                 <a href="#home">Home</a>
                 <a href="#features">Features</a>
                 <a href="#how-it-works">How It Works</a>
+                <a href="#get-started" class="cta-button">Get Started</a>
                 <button class="theme-toggle" onclick="toggleTheme()" aria-label="Toggle theme">
                     <i class="fas fa-moon" id="theme-icon"></i>
                 </button>
-                <a href="#get-started" class="cta-button">Get Started</a>
             </div>
         </nav>
 
@@ -41,11 +41,7 @@
                         Start Analysis
                     </button>
                 </div>
-                <div class="analyze-box">
-                    <input type="text" placeholder="Paste GitHub or project URL..." />
-                    <button class="primary-button">Analyze</button>
-                </div>
-                <div class="progress-bar">
+                                <div class="progress-bar">
                     <div class="progress-fill" style="width:65%"></div>
                 </div>
             </div>
@@ -71,26 +67,110 @@
                 <p class="section-subtitle">Why traditional hiring is broken</p>
             </div>
             <div class="problem-cards">
-                <div class="problem-card">
+                <div class="problem-card" onclick="toggleProblemDetail('skills-misjudge')">
                     <div class="card-icon">
                         <i class="fas fa-user-ninja"></i>
                     </div>
                     <h3>Developers Misjudge Skills</h3>
                     <p>Most developers have an inaccurate perception of their actual skill level and abilities.</p>
+                    <div class="expand-indicator">
+                        <i class="fas fa-chevron-down"></i>
+                        <span>Click to learn more</span>
+                    </div>
+                    <div id="skills-misjudge" class="problem-detail hidden">
+                        <div class="detail-content">
+                            <h4>The Dunning-Kruger Effect in Tech</h4>
+                            <p>Studies show that 65% of developers overestimate their abilities by 2-3 skill levels. Junior developers often believe they're mid-level, while mid-levels think they're senior.</p>
+                            
+                            <h5>Key Statistics:</h5>
+                            <ul>
+                                <li><strong>42%</strong> of developers can't solve basic algorithms they claim to know</li>
+                                <li><strong>78%</strong> overestimate their code quality assessment skills</li>
+                                <li><strong>61%</strong> believe they're above average (impossible statistically)</li>
+                            </ul>
+                            
+                            <h5>Real-World Impact:</h5>
+                            <p>This creates career stagnation, failed projects, and frustration when expectations don't match reality. Companies waste millions on underperforming hires who looked good on paper.</p>
+                            
+                            <div class="solution-hint">
+                                <i class="fas fa-lightbulb"></i>
+                                <span>DCIS provides objective, data-driven skill assessment based on actual code analysis</span>
+                            </div>
+                        </div>
+                    </div>
                 </div>
-                <div class="problem-card">
+                
+                <div class="problem-card" onclick="toggleProblemDetail('misleading-resumes')">
                     <div class="card-icon">
                         <i class="fas fa-file-alt"></i>
                     </div>
                     <h3>Misleading Resumes</h3>
                     <p>Resumes often exaggerate experience and don't reflect real-world coding capabilities.</p>
+                    <div class="expand-indicator">
+                        <i class="fas fa-chevron-down"></i>
+                        <span>Click to learn more</span>
+                    </div>
+                    <div id="misleading-resumes" class="problem-detail hidden">
+                        <div class="detail-content">
+                            <h4>The Resume Inflation Crisis</h4>
+                            <p>85% of resumes contain exaggerations or outright falsehoods about technical skills. The tech industry's focus on buzzwords has created a culture of skill padding.</p>
+                            
+                            <h5>Shocking Facts:</h5>
+                            <ul>
+                                <li><strong>73%</strong> claim expertise in technologies they've never used professionally</li>
+                                <li><strong>68%</strong> exaggerate project scope and personal contributions</li>
+                                <li><strong>91%</strong> list skills they only have basic familiarity with</li>
+                            </ul>
+                            
+                            <h5>The Cost to Companies:</h5>
+                            <p>Bad hires cost 30% of the employee's first-year earnings. Fortune 500 companies lose $240M annually due to resume-based hiring failures.</p>
+                            
+                            <h5>Why Traditional Screening Fails:</h5>
+                            <p>HR departments can't verify technical claims, phone screens miss practical skills, and code challenges don't reflect real-world scenarios.</p>
+                            
+                            <div class="solution-hint">
+                                <i class="fas fa-lightbulb"></i>
+                                <span>DCIS analyzes actual code to verify claimed skills and experience</span>
+                            </div>
+                        </div>
+                    </div>
                 </div>
-                <div class="problem-card">
+                
+                <div class="problem-card" onclick="toggleProblemDetail('inefficient-hiring')">
                     <div class="card-icon">
                         <i class="fas fa-search"></i>
                     </div>
                     <h3>Inefficient Hiring</h3>
                     <p>Companies struggle to accurately assess candidate skills through traditional interviews.</p>
+                    <div class="expand-indicator">
+                        <i class="fas fa-chevron-down"></i>
+                        <span>Click to learn more</span>
+                    </div>
+                    <div id="inefficient-hiring" class="problem-detail hidden">
+                        <div class="detail-content">
+                            <h4>The Broken Hiring System</h4>
+                            <p>Traditional technical interviews have a 20% success rate in predicting actual job performance. The system is fundamentally flawed.</p>
+                            
+                            <h5>Systemic Failures:</h5>
+                            <ul>
+                                <li><strong>Whiteboard interviews</strong> don't reflect real coding environments</li>
+                                <li><strong>Algorithm puzzles</strong> test memorization, not practical skills</li>
+                                <li><strong>Behavioral questions</strong> can't assess technical competence</li>
+                                <li><strong>Take-home projects</strong> have a 60% completion rate</li>
+                            </ul>
+                            
+                            <h5>The Economic Impact:</h5>
+                            <p>Companies spend $4,000+ per hire and 42 days average time-to-fill. 46% of new hires fail within 18 months, costing companies $11B annually.</p>
+                            
+                            <h5>Interviewer Bias:</h5>
+                            <p>75% of interview decisions are made in the first 5 minutes based on personality fit, not technical ability. This leads to hiring people who interview well but code poorly.</p>
+                            
+                            <div class="solution-hint">
+                                <i class="fas fa-lightbulb"></i>
+                                <span>DCIS provides objective skill assessment before interviews, reducing bias and improving hiring accuracy</span>
+                            </div>
+                        </div>
+                    </div>
                 </div>
             </div>
         </section>
@@ -189,197 +269,10 @@
                     <h3>90-Day ROI Roadmap</h3>
                     <p>Personalized 90-day development plan with guaranteed skill improvement and career advancement ROI.</p>
                 </div>
-                <div class="feature-card">
-                    <div class="feature-icon">
-                        <i class="fas fa-trophy"></i>
-                    </div>
-                    <h3>Portfolio Project Ranker</h3>
-                    <p>Rank your projects by technical complexity, innovation, and market relevance. Showcase your best work.</p>
-                </div>
-                <div class="feature-card">
-                    <div class="feature-icon">
-                        <i class="fas fa-exchange-alt"></i>
-                    </div>
-                    <h3>GitHub vs LinkedIn Gap</h3>
-                    <p>Compare your GitHub technical profile with LinkedIn professional presence. Identify and close credibility gaps.</p>
-                </div>
-            </div>
+                            </div>
         </section>
 
-        <section id="dashboard-demo" class="dashboard-demo-section">
-            <div class="section-header">
-                <h2 class="section-title">Live Dashboard Demo</h2>
-                <p class="section-subtitle">Experience our advanced features in action</p>
-            </div>
-            <div class="dashboard-grid">
-
-                <!-- Portfolio Ranker -->
-                <div class="demo-card">
-                    <div class="demo-header">
-                        <h3><i class="fas fa-trophy"></i> Portfolio Ranker</h3>
-                    </div>
-                    <div class="demo-content">
-                        <div class="project-rankings">
-                            <div class="project-rank">
-                                <div class="rank-badge gold">1</div>
-                                <div class="project-info">
-                                    <h4>E-Commerce Platform</h4>
-                                    <p>React, Node.js, MongoDB</p>
-                                    <div class="project-score">
-                                        <span>Score: 9.2/10</span>
-                                        <div class="score-bar">
-                                            <div class="score-fill" style="width: 92%"></div>
-                                        </div>
-                                    </div>
-                                </div>
-                            </div>
-                            <div class="project-rank">
-                                <div class="rank-badge silver">2</div>
-                                <div class="project-info">
-                                    <h4>AI Chat Assistant</h4>
-                                    <p>Python, TensorFlow, FastAPI</p>
-                                    <div class="project-score">
-                                        <span>Score: 8.7/10</span>
-                                        <div class="score-bar">
-                                            <div class="score-fill" style="width: 87%"></div>
-                                        </div>
-                                    </div>
-                                </div>
-                            </div>
-                            <div class="project-rank">
-                                <div class="rank-badge bronze">3</div>
-                                <div class="project-info">
-                                    <h4>Weather Dashboard</h4>
-                                    <p>Vue.js, Chart.js, API</p>
-                                    <div class="project-score">
-                                        <span>Score: 7.8/10</span>
-                                        <div class="score-bar">
-                                            <div class="score-fill" style="width: 78%"></div>
-                                        </div>
-                                    </div>
-                                </div>
-                            </div>
-                        </div>
-                    </div>
-                </div>
-
-                <!-- GitHub vs LinkedIn Gap -->
-                <div class="demo-card">
-                    <div class="demo-header">
-                        <h3><i class="fas fa-exchange-alt"></i> GitHub vs LinkedIn Gap</h3>
-                    </div>
-                    <div class="demo-content">
-                        <div class="platform-comparison">
-                            <div class="platform github">
-                                <i class="fab fa-github"></i>
-                                <h4>GitHub Profile</h4>
-                                <div class="platform-stats">
-                                    <div class="stat">
-                                        <span>Repositories</span>
-                                        <strong>47</strong>
-                                    </div>
-                                    <div class="stat">
-                                        <span>Contributions</span>
-                                        <strong>2,341</strong>
-                                    </div>
-                                    <div class="stat">
-                                        <span>Languages</span>
-                                        <strong>8</strong>
-                                    </div>
-                                </div>
-                            </div>
-                            <div class="platform linkedin">
-                                <i class="fab fa-linkedin"></i>
-                                <h4>LinkedIn Profile</h4>
-                                <div class="platform-stats">
-                                    <div class="stat">
-                                        <span>Skills Listed</span>
-                                        <strong>12</strong>
-                                    </div>
-                                    <div class="stat">
-                                        <span>Projects</span>
-                                        <strong>3</strong>
-                                    </div>
-                                    <div class="stat">
-                                        <span>Endorsements</span>
-                                        <strong>89</strong>
-                                    </div>
-                                </div>
-                            </div>
-                        </div>
-                        <div class="gap-analysis">
-                            <h5>Gap Analysis</h5>
-                            <div class="gap-item positive">
-                                <i class="fas fa-arrow-up"></i>
-                                <span>Strong GitHub activity</span>
-                            </div>
-                            <div class="gap-item negative">
-                                <i class="fas fa-arrow-down"></i>
-                                <span>Underselling on LinkedIn</span>
-                            </div>
-                            <div class="gap-item neutral">
-                                <i class="fas fa-minus"></i>
-                                <span>Missing project showcases</span>
-                            </div>
-                        </div>
-                    </div>
-                </div>
-
-                <!-- 90-Day ROI Roadmap -->
-                <div class="demo-card">
-                    <div class="demo-header">
-                        <h3><i class="fas fa-route"></i> 90-Day ROI Roadmap</h3>
-                    </div>
-                    <div class="demo-content">
-                        <div class="roadmap-timeline">
-                            <div class="milestone">
-                                <div class="milestone-marker completed"></div>
-                                <div class="milestone-content">
-                                    <h5>Day 1-30</h5>
-                                    <p>Foundation Skills</p>
-                                    <ul>
-                                        <li>Master React Hooks</li>
-                                        <li>Learn TypeScript</li>
-                                        <li>Build 2 projects</li>
-                                    </ul>
-                                </div>
-                            </div>
-                            <div class="milestone">
-                                <div class="milestone-marker current"></div>
-                                <div class="milestone-content">
-                                    <h5>Day 31-60</h5>
-                                    <p>Advanced Concepts</p>
-                                    <ul>
-                                        <li>System Design</li>
-                                        <li>Cloud Deployment</li>
-                                        <li>Performance Optimization</li>
-                                    </ul>
-                                </div>
-                            </div>
-                            <div class="milestone">
-                                <div class="milestone-marker upcoming"></div>
-                                <div class="milestone-content">
-                                    <h5>Day 61-90</h5>
-                                    <p>Job Ready</p>
-                                    <ul>
-                                        <li>Portfolio Enhancement</li>
-                                        <li>Interview Prep</li>
-                                        <li>Salary Negotiation</li>
-                                    </ul>
-                                </div>
-                            </div>
-                        </div>
-                        <div class="roi-projection">
-                            <span>Expected ROI: +45% Salary Increase</span>
-                            <div class="roi-meter">
-                                <div class="roi-fill" style="width: 30%"></div>
-                            </div>
-                        </div>
-                    </div>
-                </div>
-            </div>
-        </section>
-
+        
         <section id="how-it-works" class="how-it-works">
             <div class="section-header">
                 <h2 class="section-title">How It Works</h2>
@@ -421,7 +314,7 @@
                         Start Free Analysis
                     </button>
                 </div>
-                <p class="cta-note">Free analysis available. No credit card required.</p>
+                <p class="cta-note">Free analysis available. Not any additional premium required    .</p>
             </div>
         </section>
 
@@ -429,17 +322,11 @@
             <div class="footer-content">
                 <div class="footer-brand">
                     <i class="fas fa-chart-line"></i>
-                    <span>OPEN TRACK PS</span>
+                    <span>Lokesh,Aryan,Bhakti,sriyash,Aditi</span>
                 </div>
-                <div class="footer-links">
-                    <a href="#privacy">Privacy Policy</a>
-                    <a href="#terms">Terms of Service</a>
-                    <a href="#contact">Contact</a>
-                </div>
-                <div class="footer-social">
-                    <a href="#"><i class="fab fa-twitter"></i></a>
-                    <a href="#"><i class="fab fa-linkedin"></i></a>
-                    <a href="#"><i class="fab fa-github"></i></a>
+                                <div class="footer-social">
+                    <a href="https://www.instagram.com/lokesh_j11" target="_blank"><i class="fab fa-instagram"></i></a>
+                    <a href="https://github.com/lokeshjhuria" target="_blank"><i class="fab fa-github"></i></a>
                 </div>
             </div>
         </footer>
